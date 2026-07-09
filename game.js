@@ -829,11 +829,81 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
 window.addEventListener('pointerdown', (e) => {
-  if (e.target.closest('button')) return; // UIボタンはそれぞれのハンドラで処理
+  if (e.target.closest('button') || e.target.closest('#touch-ui')) return; // UI要素はそれぞれのハンドラで処理
   Sfx.ensure();
   if (S.mode === 'over' || S.mode === 'clear') { location.reload(); return; }
   if (S.mode === 'play') trySlash();
 });
+
+// ============================================================
+// タッチ操作(スマホ用バーチャルパッド・ON/OFF切替可)
+// ============================================================
+const joy = { x: 0, z: 0, id: null };
+const touchUI = document.getElementById('touch-ui');
+const isTouchDevice = ('ontouchstart' in window) || (window.matchMedia && matchMedia('(pointer: coarse)').matches);
+let touchOn = localStorage.getItem('sr.touch') === null ? isTouchDevice : localStorage.getItem('sr.touch') === '1';
+
+function applyTouchUI() {
+  touchUI.classList.toggle('on', touchOn);
+  document.body.classList.toggle('touch-on', touchOn);
+  document.getElementById('touch-toggle').classList.toggle('active', touchOn);
+  document.querySelectorAll('[data-touch]').forEach((b) => b.classList.toggle('sel', (b.dataset.touch === '1') === touchOn));
+  if (!touchOn) { joy.x = 0; joy.z = 0; joy.id = null; }
+}
+function setTouch(v) {
+  touchOn = v;
+  localStorage.setItem('sr.touch', v ? '1' : '0');
+  applyTouchUI();
+}
+document.querySelectorAll('[data-touch]').forEach((btn) => {
+  btn.addEventListener('click', (e) => { e.stopPropagation(); setTouch(btn.dataset.touch === '1'); });
+});
+document.getElementById('touch-toggle').addEventListener('pointerdown', (e) => {
+  e.preventDefault(); e.stopPropagation();
+  setTouch(!touchOn);
+});
+
+// ジョイスティック(左スティック: 移動)
+const joyBase = document.getElementById('joy-base');
+const joyStick = document.getElementById('joy-stick');
+function moveJoy(e) {
+  const r = joyBase.getBoundingClientRect();
+  let dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
+  let dy = (e.clientY - (r.top + r.height / 2)) / (r.height / 2);
+  const len = Math.hypot(dx, dy);
+  if (len > 1) { dx /= len; dy /= len; }
+  joy.x = -dx;      // 画面左 = ゲーム内 +x
+  joy.z = -dy;      // 画面上 = 前進
+  joyStick.style.transform = `translate(calc(-50% + ${dx * r.width * 0.3}px), calc(-50% + ${dy * r.height * 0.3}px))`;
+}
+function endJoy(e) {
+  if (e.pointerId !== joy.id) return;
+  joy.id = null; joy.x = 0; joy.z = 0;
+  joyStick.style.transform = 'translate(-50%, -50%)';
+}
+joyBase.addEventListener('pointerdown', (e) => {
+  e.preventDefault(); e.stopPropagation();
+  Sfx.ensure();
+  joy.id = e.pointerId;
+  joyBase.setPointerCapture(e.pointerId);
+  moveJoy(e);
+});
+joyBase.addEventListener('pointermove', (e) => { if (e.pointerId === joy.id) moveJoy(e); });
+joyBase.addEventListener('pointerup', endJoy);
+joyBase.addEventListener('pointercancel', endJoy);
+
+// アクションボタン(右: 斬・跳・疾)
+function bindAction(id, fn) {
+  document.getElementById(id).addEventListener('pointerdown', (e) => {
+    e.preventDefault(); e.stopPropagation();
+    Sfx.ensure();
+    if (S.mode === 'play') fn();
+  });
+}
+bindAction('btn-slash', trySlash);
+bindAction('btn-jump', tryJump);
+bindAction('btn-dash', trySlide);
+applyTouchUI();
 
 // ============================================================
 // アクション
@@ -844,7 +914,10 @@ function inputDir() {
   if (keys['s'] || keys['arrowdown']) d.z -= 1;
   if (keys['a'] || keys['arrowleft']) d.x += 1;   // カメラは+z向き: 左= +x
   if (keys['d'] || keys['arrowright']) d.x -= 1;
-  return d.normalize();
+  d.x += joy.x;
+  d.z += joy.z;
+  if (d.lengthSq() > 1) d.normalize(); // ジョイスティックはアナログ量を維持
+  return d;
 }
 
 function trySlide() {
