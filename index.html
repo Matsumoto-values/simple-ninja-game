@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>SHINOBI RUSH 〜疾風の刃〜</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚔️</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,7 +17,8 @@
     user-select: none;
     -webkit-user-select: none;
   }
-  #game-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; }
+  #game-canvas { display: block; width: 100%; height: 100%; cursor: crosshair; touch-action: none; }
+  body { touch-action: manipulation; }
 
   /* ---------- HUD ---------- */
   #hud { position: fixed; inset: 0; pointer-events: none; display: none; }
@@ -65,6 +66,10 @@
   #progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #b98cff, #ff5c8a); }
   #progress-label { text-align: center; font-size: 11px; letter-spacing: 3px; color: #9fb2cc; margin-top: 4px; }
   #progress-label .num { font-family: "Rajdhani", monospace; }
+  /* 幅の狭い画面では進行バーを一段下げて重なりを防ぐ */
+  @media (max-width: 760px) {
+    #progress-wrap { top: 110px; left: 16px; transform: none; width: min(340px, 52vw); }
+  }
 
   #controls-hint {
     position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
@@ -108,6 +113,19 @@
     pointer-events: none;
   }
   .overlay.on { display: flex; }
+  /* 縦が狭い画面(スマホ横持ち)ではコンパクト表示 */
+  @media (max-height: 540px) {
+    .overlay { justify-content: flex-start; overflow-y: auto; padding: 10px 0; }
+    .overlay h1 { font-size: 34px; letter-spacing: 8px; }
+    .overlay .sub { font-size: 13px; letter-spacing: 6px; margin-bottom: 12px; }
+    #title-overlay .controls { display: none; }
+    #title-overlay .start-hint { display: none; }
+    #start-btn { font-size: 22px; padding: 8px 44px; margin: 8px 0 10px; }
+    .select-row { margin-bottom: 8px; }
+    .chip { padding: 6px 14px; font-size: 12px; }
+    .chip small { font-size: 9px; }
+    #title-art { display: none; }
+  }
   .overlay button { pointer-events: auto; }
   .overlay h1 {
     font-family: "Rajdhani", "Zen Kaku Gothic New", sans-serif;
@@ -182,6 +200,49 @@
   @media (min-width: 1100px) { #title-overlay { padding-right: min(26vw, 380px); } }
   @media (max-width: 980px) { #title-art { opacity: 0.3; right: -14vw; } }
 
+  /* ---------- タッチ操作UI(スマホ用・ON/OFF可) ---------- */
+  #touch-ui { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 6; }
+  #touch-ui.on { display: block; }
+  #joy-base {
+    position: absolute; left: max(3vw, 16px); bottom: max(5vh, 24px);
+    width: 132px; height: 132px; border-radius: 50%;
+    background: rgba(16, 26, 48, 0.4); border: 2px solid rgba(140, 170, 220, 0.45);
+    pointer-events: auto; touch-action: none;
+  }
+  #joy-stick {
+    position: absolute; left: 50%; top: 50%; width: 58px; height: 58px; border-radius: 50%;
+    background: rgba(124, 216, 255, 0.45); border: 2px solid rgba(180, 230, 255, 0.8);
+    transform: translate(-50%, -50%); pointer-events: none;
+    box-shadow: 0 0 14px rgba(80, 200, 255, 0.4);
+  }
+  .act-btn {
+    position: absolute; border-radius: 50%;
+    pointer-events: auto; touch-action: none; user-select: none; -webkit-user-select: none;
+    font-family: "Yuji Syuku", "Zen Kaku Gothic New", serif; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); cursor: pointer;
+  }
+  .act-btn:active { filter: brightness(1.5); }
+  #btn-slash {
+    right: max(4vw, 18px); bottom: max(6vh, 30px); width: 96px; height: 96px; font-size: 40px;
+    background: rgba(200, 40, 70, 0.45); border: 2px solid rgba(255, 120, 150, 0.7);
+  }
+  #btn-jump {
+    right: calc(max(4vw, 18px) + 106px); bottom: calc(max(6vh, 30px) + 62px); width: 68px; height: 68px; font-size: 26px;
+    background: rgba(60, 130, 220, 0.4); border: 2px solid rgba(140, 190, 255, 0.7);
+  }
+  #btn-dash {
+    right: calc(max(4vw, 18px) + 112px); bottom: max(6vh, 30px); width: 68px; height: 68px; font-size: 26px;
+    background: rgba(40, 180, 210, 0.4); border: 2px solid rgba(120, 230, 255, 0.7);
+  }
+  #touch-toggle {
+    position: fixed; right: 12px; bottom: 12px; width: 44px; height: 44px; z-index: 7;
+    border-radius: 10px; border: 1px solid #3a4c74; background: rgba(18, 26, 46, 0.8);
+    color: #b9c8e2; font-size: 20px; cursor: pointer; pointer-events: auto;
+  }
+  #touch-toggle.active { border-color: #7cd8ff; box-shadow: 0 0 10px rgba(80, 200, 255, 0.45); }
+  body.touch-on #controls-hint { display: none; }
+
   #clear-overlay h1, #over-overlay h1 {
     font-family: "Yuji Syuku", serif; font-weight: 400; letter-spacing: 18px; text-indent: 18px;
     margin-bottom: 10px;
@@ -220,6 +281,15 @@
   <div id="dash-tint"></div>
   <div id="popup"></div>
 
+  <!-- タッチ操作UI(ON/OFF切替可) -->
+  <div id="touch-ui">
+    <div id="joy-base"><div id="joy-stick"></div></div>
+    <button class="act-btn" id="btn-slash">斬</button>
+    <button class="act-btn" id="btn-jump">跳</button>
+    <button class="act-btn" id="btn-dash">疾</button>
+  </div>
+  <button id="touch-toggle" title="タッチ操作パッドの表示切替">🎮</button>
+
   <div id="title-overlay" class="overlay on">
     <div id="title-art" aria-hidden="true">
       <!-- キャラクター画像: assets/title-character.png を任意の透過PNGに差し替えてください -->
@@ -239,6 +309,11 @@
       <button class="chip" data-diff="0">初伝<small>おだやか</small></button>
       <button class="chip" data-diff="1">中伝<small>手応えあり</small></button>
       <button class="chip" data-diff="2">皆伝<small>弾幕地獄</small></button>
+    </div>
+    <div class="select-row" id="touch-row">
+      <span class="select-label">操作</span>
+      <button class="chip" data-touch="1">タッチ操作<small>スマホ向けパッド表示</small></button>
+      <button class="chip" data-touch="0">キーボード<small>パッド非表示</small></button>
     </div>
 
     <button id="start-btn">出撃</button>
