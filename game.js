@@ -446,64 +446,156 @@ function disposeStage(cur) {
 }
 
 // ============================================================
-// プレイヤー(忍者)モデル
+// プレイヤー(くノ一)モデル
+// 金髪ポニーテール + 黒いリボン + 白鉢巻 + 赤縁の黒装束 + 赤い帯
 // ============================================================
-function makeLimb(w, h, d, color) {
-  const g = new THREE.Group();
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: 0.85 }));
-  mesh.position.y = -h / 2;
-  g.add(mesh);
-  return g;
-}
-
 function makeNinja() {
   const root = new THREE.Group();     // ワールド位置(足元基準)
   const model = new THREE.Group();    // ポーズ用(スライドや壁走りで傾ける)
   root.add(model);
 
-  const navy = 0x1c2438, navyD = 0x141a2c, skin = 0xd9b08c, red = 0xd42b45;
+  const SKIN = 0xf6cfa4, HAIR = 0xe8c052,
+        CLOTH = 0x34363f, RED = 0xd42b45, OBI = 0xc23046,
+        BROWN = 0x74492f, GUARD = 0x38292a, WHITE = 0xf2f0ea, BLACK = 0x26262c;
+  const mat = (c, r = 0.85) => new THREE.MeshStandardMaterial({ color: c, roughness: r });
 
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.85, 0.46), new THREE.MeshStandardMaterial({ color: navy, roughness: 0.85 }));
-  body.position.y = 1.15;
+  // 胴(黒装束のワンピース)
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 0.4), mat(CLOTH));
+  body.position.y = 1.3;
   model.add(body);
-
-  const belt = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.14, 0.5), new THREE.MeshStandardMaterial({ color: red, roughness: 0.7 }));
-  belt.position.y = 0.85;
-  model.add(belt);
-
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.48, 0.5), new THREE.MeshStandardMaterial({ color: navyD, roughness: 0.85 }));
-  head.position.y = 1.85;
-  model.add(head);
-  const eyes = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.13, 0.52), new THREE.MeshStandardMaterial({ color: skin, roughness: 0.9 }));
-  eyes.position.y = 1.9;
-  model.add(eyes);
-  const band = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.1, 0.54), new THREE.MeshStandardMaterial({ color: 0x8b93a8, metalness: 0.6, roughness: 0.4 }));
-  band.position.y = 2.02;
-  model.add(band);
-
-  // マフラー(たなびく赤)
-  const scarf = new THREE.Group();
-  const scarfMat = new THREE.MeshStandardMaterial({ color: red, roughness: 0.8 });
-  const segs = [];
-  let prev = scarf;
-  for (let i = 0; i < 3; i++) {
-    const seg = new THREE.Group();
-    const m = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.09, 0.42), scarfMat);
-    m.position.z = -0.21;
-    seg.add(m);
-    seg.position.z = i === 0 ? -0.25 : -0.4;
-    prev.add(seg);
-    segs.push(seg);
-    prev = seg;
+  // 首
+  const neck = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.14), mat(SKIN, 0.9));
+  neck.position.y = 1.62;
+  model.add(neck);
+  // 襟の赤いV字トリム
+  for (const s of [-1, 1]) {
+    const trim = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.38, 0.03), mat(RED, 0.7));
+    trim.position.set(s * 0.12, 1.46, 0.21);
+    trim.rotation.z = -s * 0.45;
+    model.add(trim);
   }
-  scarf.position.y = 1.62;
-  model.add(scarf);
+  // スカート(裾広がり・赤い裾)
+  const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.52, 0.42, 4), mat(CLOTH));
+  skirt.position.y = 0.84;
+  skirt.rotation.y = Math.PI / 4;
+  const hem = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.56, 0.09, 4), mat(RED, 0.7));
+  hem.position.y = 0.62;
+  hem.rotation.y = Math.PI / 4;
+  model.add(skirt, hem);
+  // 赤い帯
+  const obi = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.16, 0.44), mat(OBI, 0.7));
+  obi.position.y = 1.04;
+  model.add(obi);
+  // 帯の長い垂れ(背中でたなびく)
+  const sashBase = new THREE.Group();
+  sashBase.position.set(0, 1.0, -0.2);
+  sashBase.rotation.x = -0.55;
+  const sashSegs = [];
+  {
+    let prev = sashBase;
+    for (let i = 0; i < 4; i++) {
+      const seg = new THREE.Group();
+      const m2 = new THREE.Mesh(new THREE.BoxGeometry(0.26 - i * 0.03, 0.05, 0.34), mat(RED, 0.75));
+      m2.position.z = -0.17;
+      seg.add(m2);
+      seg.position.z = i === 0 ? 0 : -0.32;
+      prev.add(seg);
+      sashSegs.push(seg);
+      prev = seg;
+    }
+  }
+  model.add(sashBase);
 
-  const armL = makeLimb(0.2, 0.62, 0.2, navy); armL.position.set(-0.5, 1.5, 0);
-  const armR = makeLimb(0.2, 0.62, 0.2, navy); armR.position.set(0.5, 1.5, 0);
-  const legL = makeLimb(0.24, 0.8, 0.24, navyD); legL.position.set(-0.2, 0.8, 0);
-  const legR = makeLimb(0.24, 0.8, 0.24, navyD); legR.position.set(0.2, 0.8, 0);
-  model.add(armL, armR, legL, legR);
+  // 頭(素肌の顔)
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.44, 0.46), mat(SKIN, 0.9));
+  head.position.y = 1.88;
+  model.add(head);
+  // 琥珀色の目(+zが正面)
+  for (const s of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 0.02), mat(0xcf7d18, 0.5));
+    eye.position.set(s * 0.11, 1.88, 0.24);
+    model.add(eye);
+  }
+  // 白い鉢巻
+  const band = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.09, 0.48), mat(WHITE, 0.6));
+  band.position.y = 2.04;
+  model.add(band);
+  // 金髪: 頭頂・後ろ髪・前髪・横の房
+  const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.16, 0.52), mat(HAIR));
+  hairTop.position.y = 2.16;
+  const hairBack = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.52, 0.14), mat(HAIR));
+  hairBack.position.set(0, 1.86, -0.26);
+  const bangs = new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.13, 0.08), mat(HAIR));
+  bangs.position.set(0, 2.0, 0.26);
+  model.add(hairTop, hairBack, bangs);
+  for (const s of [-1, 1]) {
+    const lock = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.44, 0.1), mat(HAIR));
+    lock.position.set(s * 0.24, 1.76, 0.2);
+    model.add(lock);
+  }
+
+  // ポニーテール(なびく)
+  const ponyBase = new THREE.Group();
+  ponyBase.position.set(0, 2.18, -0.2);
+  ponyBase.rotation.x = -0.85;
+  const ponySegs = [];
+  {
+    let prev = ponyBase;
+    for (let i = 0; i < 4; i++) {
+      const seg = new THREE.Group();
+      const m2 = new THREE.Mesh(new THREE.BoxGeometry(0.2 - i * 0.035, 0.14 - i * 0.015, 0.3), mat(HAIR));
+      m2.position.z = -0.15;
+      seg.add(m2);
+      seg.position.z = i === 0 ? 0 : -0.28;
+      prev.add(seg);
+      ponySegs.push(seg);
+      prev = seg;
+    }
+  }
+  // 黒い蝶結びのリボン
+  for (const s of [-1, 1]) {
+    const loop = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.05), mat(BLACK, 0.7));
+    loop.position.set(s * 0.12, 0.04, 0.02);
+    loop.rotation.z = s * 0.5;
+    ponyBase.add(loop);
+    const tail = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.26, 0.02), mat(BLACK, 0.7));
+    tail.position.set(s * 0.1, -0.14, 0.02);
+    tail.rotation.z = -s * 0.25;
+    ponyBase.add(tail);
+  }
+  model.add(ponyBase);
+
+  // 腕(素肌+革の籠手)
+  function makeArm(side) {
+    const g = new THREE.Group();
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.28, 0.15), mat(SKIN, 0.9));
+    upper.position.y = -0.14;
+    const gaunt = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.3, 0.18), mat(BROWN, 0.75));
+    gaunt.position.y = -0.44;
+    g.add(upper, gaunt);
+    g.position.set(side * 0.42, 1.6, 0);
+    return g;
+  }
+  const armL = makeArm(-1);
+  const armR = makeArm(1);
+  model.add(armL, armR);
+
+  // 脚(素肌の太もも+黒い脛当て+赤い草履)
+  function makeLeg(side) {
+    const g = new THREE.Group();
+    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.4, 0.19), mat(SKIN, 0.9));
+    thigh.position.y = -0.2;
+    const shin = new THREE.Mesh(new THREE.BoxGeometry(0.21, 0.38, 0.21), mat(GUARD, 0.8));
+    shin.position.y = -0.59;
+    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.06, 0.28), mat(RED, 0.8));
+    foot.position.set(0, -0.81, 0.04);
+    g.add(thigh, shin, foot);
+    g.position.set(side * 0.18, 0.85, 0);
+    return g;
+  }
+  const legL = makeLeg(-1);
+  const legR = makeLeg(1);
+  model.add(legL, legR);
 
   // 刀(右手)
   const sword = new THREE.Group();
@@ -527,7 +619,7 @@ function makeNinja() {
   blob.position.y = 0.02;
   root.add(blob);
 
-  return { root, model, armL, armR, legL, legR, scarfSegs: segs, sword, blob };
+  return { root, model, armL, armR, legL, legR, ponyBase, ponySegs, sashBase, sashSegs, sword, blob };
 }
 
 // ============================================================
@@ -765,6 +857,7 @@ function trySlide() {
   S.invuln = Math.max(S.invuln, S.slide + 0.05);
   S.wall = 0;
   document.getElementById('dash-tint').style.opacity = '1';
+  for (let i = 0; i < 10; i++) spawnPetal(true); // 桜吹雪
   Sfx.dash();
 }
 
@@ -950,6 +1043,45 @@ function spawnGhost() {
   });
 }
 
+// 桜の花びら: ダッシュ中に舞い上がり、カメラのほうへ立体的に流れてくる
+const petalGeo = new THREE.PlaneGeometry(0.15, 0.11);
+let petalTimer = 0;
+function spawnPetal(burst = false) {
+  const colors = [0xffb7cf, 0xf7a8c4, 0xffd0dd];
+  const mat = new THREE.MeshBasicMaterial({
+    color: colors[Math.floor(Math.random() * colors.length)],
+    transparent: true, opacity: 0.95, side: THREE.DoubleSide, depthWrite: false,
+  });
+  const mesh = new THREE.Mesh(petalGeo, mat);
+  const p = player.root.position;
+  mesh.position.set(
+    p.x + (Math.random() - 0.5) * (burst ? 3.2 : 2.2),
+    p.y + 0.2 + Math.random() * 1.9,
+    p.z + (Math.random() - 0.5) * 1.6
+  );
+  mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+  scene.add(mesh);
+  const vel = new THREE.Vector3(
+    (Math.random() - 0.5) * (burst ? 8 : 4.5),
+    0.5 + Math.random() * 2.4,
+    -12 - Math.random() * 10 // 手前(カメラ側)へ流れ、視界を通り過ぎていく
+  );
+  const spin = new THREE.Vector3(4 + Math.random() * 7, 4 + Math.random() * 8, 3 + Math.random() * 6);
+  const phase = Math.random() * Math.PI * 2;
+  effects.push({
+    mesh, life: 0, ttl: 0.8 + Math.random() * 0.4, sharedGeo: true,
+    update(e, k, dt2) {
+      vel.y -= 2.5 * dt2;
+      e.mesh.position.addScaledVector(vel, dt2);
+      e.mesh.position.x += Math.sin(e.life * 9 + phase) * dt2 * 1.8; // ひらひらと横に揺れる
+      e.mesh.rotation.x += spin.x * dt2;
+      e.mesh.rotation.y += spin.y * dt2;
+      e.mesh.rotation.z += spin.z * dt2;
+      e.mesh.material.opacity = k > 0.6 ? 0.95 * (1 - (k - 0.6) / 0.4) : 0.95;
+    },
+  });
+}
+
 function spawnMuzzle(pos) {
   const mat = new THREE.MeshBasicMaterial({ color: 0xffd26b, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
   const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.28, 8, 6), mat);
@@ -1130,6 +1262,8 @@ function updatePlayer(dt) {
       if (S.airDash) S.vy = 0; // エアダッシュ中は高度維持
       ghostTimer -= dt;
       if (ghostTimer <= 0) { spawnGhost(); ghostTimer = 0.04; }
+      petalTimer -= dt;
+      if (petalTimer <= 0) { spawnPetal(); spawnPetal(); petalTimer = 0.022; }
       if (S.slide <= 0) {
         S.airDash = false;
         document.getElementById('dash-tint').style.opacity = '0';
@@ -1155,6 +1289,8 @@ function updatePlayer(dt) {
       S.vy = -1.2; // ゆっくり降下しながら走る
       ghostTimer -= dt;
       if (ghostTimer <= 0) { spawnGhost(); ghostTimer = 0.06; }
+      petalTimer -= dt;
+      if (petalTimer <= 0) { spawnPetal(); petalTimer = 0.05; }
     } else {
       S.wall = 0;
     }
@@ -1225,7 +1361,9 @@ function updatePlayer(dt) {
     player.armL.rotation.x = lerpR(player.armL.rotation.x, -1.6, dt * 8);
     if (S.swing <= 0) player.armR.rotation.x = lerpR(player.armR.rotation.x, -1.4, dt * 8);
   } else {
-    m.rotation.x = lerpR(m.rotation.x, 0, dt * 12);
+    // 走行中は前傾姿勢で疾走感を出す
+    const running = inputDir().lengthSq() > 0.01;
+    m.rotation.x = lerpR(m.rotation.x, running ? 0.34 : 0.02, dt * 10);
     m.position.y = lerpR(m.position.y, Math.abs(Math.sin(S.runPhase)) * 0.08, dt * 14);
     const sw = Math.sin(S.runPhase);
     player.legL.rotation.x = sw * 0.85;
@@ -1246,11 +1384,18 @@ function updatePlayer(dt) {
   }
   m.visible = S.invuln > 0 && S.slide <= 0 && !S.lunge ? Math.floor(S.time * 20) % 2 === 0 : true;
 
-  // マフラーのたなびき
+  // ポニーテールと帯のたなびき(速いほど後ろへ流れる)
   const wave = Math.sin(S.time * 9);
-  const speedK = S.slide > 0 || S.wall !== 0 ? 1.8 : 1;
-  player.scarfSegs.forEach((seg, i) => {
-    seg.rotation.x = (0.35 + wave * 0.25 * (i + 1) * 0.4) * speedK;
+  const fast = S.slide > 0 || S.wall !== 0;
+  const speedK = fast ? 1.8 : 1;
+  const moving = inputDir().lengthSq() > 0.01;
+  player.ponyBase.rotation.x = lerpR(player.ponyBase.rotation.x, fast ? -0.05 : moving ? -0.35 : -0.85, dt * 6);
+  player.ponySegs.forEach((seg, i) => {
+    seg.rotation.x = wave * 0.16 * (i + 1) * 0.5 * speedK - 0.08;
+  });
+  player.sashBase.rotation.x = lerpR(player.sashBase.rotation.x, fast ? -0.1 : moving ? -0.3 : -0.55, dt * 6);
+  player.sashSegs.forEach((seg, i) => {
+    seg.rotation.x = wave * 0.2 * (i + 1) * 0.4 * speedK - 0.06;
   });
 
   // 回復の霊珠
@@ -1393,7 +1538,7 @@ function updateEffects(dt) {
     const k = e.life / e.ttl;
     if (k >= 1) {
       scene.remove(e.mesh);
-      if (e.mesh.geometry) e.mesh.geometry.dispose();
+      if (e.mesh.geometry && !e.sharedGeo) e.mesh.geometry.dispose();
       if (e.mesh.material) e.mesh.material.dispose();
       effects.splice(i, 1);
     } else {
