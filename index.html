@@ -176,15 +176,8 @@
     filter: drop-shadow(0 10px 34px rgba(0, 0, 0, 0.55));
     animation: art-bob 5.5s ease-in-out infinite;
   }
-  #title-art svg { width: 100%; height: 100%; }
+  #title-art img { width: 100%; height: 100%; object-fit: contain; object-position: bottom; }
   @keyframes art-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-  .petal-f { animation: petal-drift 7s linear infinite; }
-  .petal-s { animation: petal-drift 9s linear infinite reverse; }
-  @keyframes petal-drift {
-    0%   { transform: translate(0, 0) rotate(0deg); opacity: 0.95; }
-    50%  { transform: translate(-34px, 46px) rotate(140deg); opacity: 0.6; }
-    100% { transform: translate(-70px, 92px) rotate(300deg); opacity: 0.95; }
-  }
   #title-overlay > *:not(#title-art) { position: relative; z-index: 1; }
   @media (min-width: 1100px) { #title-overlay { padding-right: min(26vw, 380px); } }
   @media (max-width: 980px) { #title-art { opacity: 0.3; right: -14vw; } }
@@ -229,118 +222,8 @@
 
   <div id="title-overlay" class="overlay on">
     <div id="title-art" aria-hidden="true">
-      <!-- 主人公「疾風のくノ一」オリジナルイラスト -->
-      <svg viewBox="0 0 420 620" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <radialGradient id="tg-glow">
-            <stop offset="0%" stop-color="#fff" stop-opacity="0.55"/>
-            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-          </radialGradient>
-          <linearGradient id="tg-iris" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#f6bd4f"/>
-            <stop offset="1" stop-color="#b8770f"/>
-          </linearGradient>
-          <linearGradient id="tg-fade" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0.72" stop-color="#fff"/>
-            <stop offset="0.98" stop-color="#fff" stop-opacity="0"/>
-          </linearGradient>
-          <mask id="tg-mask"><rect x="0" y="0" width="420" height="620" fill="url(#tg-fade)"/></mask>
-        </defs>
-
-        <!-- 背景の光と日輪 -->
-        <circle cx="210" cy="225" r="205" fill="url(#tg-glow)"/>
-        <circle cx="210" cy="220" r="152" fill="#c22440" opacity="0.92"/>
-        <circle cx="210" cy="220" r="163" fill="none" stroke="#ff5c7a" stroke-width="3" opacity="0.4"/>
-
-        <g mask="url(#tg-mask)">
-          <!-- 刀(左肩の後ろの柄) -->
-          <g transform="rotate(-38 140 265)">
-            <rect x="118" y="196" width="17" height="76" rx="6" fill="#32323c"/>
-            <path d="M121,206 l11,9 M121,224 l11,9 M121,242 l11,9 M132,206 l-11,9 M132,224 l-11,9 M132,242 l-11,9" stroke="#d42b45" stroke-width="2.4" opacity="0.9"/>
-            <ellipse cx="126.5" cy="276" rx="15" ry="7" fill="#cfa93f"/>
-          </g>
-
-          <!-- ポニーテール(頭の後ろから右へなびく) -->
-          <path d="M250,120 C332,66 388,150 356,246 C340,300 306,338 282,360 C304,296 312,240 292,190 C282,158 266,136 250,126 Z" fill="#eec455"/>
-          <path d="M340,255 C348,308 322,362 292,398 C316,330 320,296 330,258 Z" fill="#e4b544"/>
-          <path d="M300,150 C330,170 342,210 336,246" fill="none" stroke="#d4a83c" stroke-width="4" stroke-linecap="round"/>
-
-          <!-- 後ろ髪のシルエット -->
-          <path d="M144,196 C136,116 174,90 210,88 C246,90 284,116 276,196 C276,228 268,250 256,262 L164,262 C152,250 144,228 144,196 Z" fill="#eec455"/>
-
-          <!-- 首と肩 -->
-          <rect x="195" y="250" width="30" height="38" fill="#ffdcb8"/>
-          <rect x="195" y="250" width="30" height="10" fill="#ecc09a"/>
-          <path d="M126,364 Q158,292 210,286 Q262,292 294,364 L294,478 L126,478 Z" fill="#ffdcb8"/>
-
-          <!-- 黒装束(V襟)と赤い縁取り -->
-          <path d="M116,376 C148,320 174,306 194,300 L210,334 L226,300 C246,306 272,320 304,376 L304,478 L116,478 Z" fill="#34363f"/>
-          <path d="M194,300 L210,334 L226,300" fill="none" stroke="#d42b45" stroke-width="7" stroke-linejoin="round"/>
-          <path d="M116,376 C148,320 174,306 194,300" fill="none" stroke="#d42b45" stroke-width="5"/>
-          <path d="M304,376 C272,320 246,306 226,300" fill="none" stroke="#d42b45" stroke-width="5"/>
-          <!-- 胸元の網(フィッシュネット) -->
-          <g stroke="#565b68" stroke-width="1.6" opacity="0.9">
-            <path d="M198,304 l18,22 M204,300 l14,17 M222,304 l-18,22 M216,300 l-14,17"/>
-          </g>
-          <!-- 赤い帯 -->
-          <rect x="116" y="452" width="188" height="34" fill="#c23046"/>
-          <rect x="116" y="456" width="188" height="5" fill="#e85a6e" opacity="0.7"/>
-
-          <!-- 顔 -->
-          <path d="M162,178 C160,226 174,250 210,258 C246,250 260,226 258,178 C258,138 240,120 210,120 C180,120 162,138 162,178 Z" fill="#ffdfc2"/>
-          <ellipse cx="177" cy="219" rx="10" ry="5" fill="#ff9d8a" opacity="0.35"/>
-          <ellipse cx="243" cy="219" rx="10" ry="5" fill="#ff9d8a" opacity="0.35"/>
-
-          <!-- 目(琥珀色・気の強い目つき) -->
-          <path d="M167,196 C174,184 194,182 202,192" fill="none" stroke="#1d1a18" stroke-width="5.5" stroke-linecap="round"/>
-          <ellipse cx="186" cy="205" rx="11" ry="14" fill="url(#tg-iris)"/>
-          <ellipse cx="186" cy="207" rx="4.5" ry="7" fill="#5e3a05"/>
-          <circle cx="182" cy="199" r="3.5" fill="#fff"/>
-          <circle cx="190" cy="211" r="1.8" fill="#fff" opacity="0.85"/>
-          <path d="M172,216 C179,220 194,220 200,216" fill="none" stroke="#caa08c" stroke-width="2"/>
-          <path d="M253,196 C246,184 226,182 218,192" fill="none" stroke="#1d1a18" stroke-width="5.5" stroke-linecap="round"/>
-          <ellipse cx="234" cy="205" rx="11" ry="14" fill="url(#tg-iris)"/>
-          <ellipse cx="234" cy="207" rx="4.5" ry="7" fill="#5e3a05"/>
-          <circle cx="230" cy="199" r="3.5" fill="#fff"/>
-          <circle cx="238" cy="211" r="1.8" fill="#fff" opacity="0.85"/>
-          <path d="M220,216 C227,220 242,220 248,216" fill="none" stroke="#caa08c" stroke-width="2"/>
-          <!-- 眉(凛々しく) -->
-          <path d="M168,180 C178,173 192,173 203,179" fill="none" stroke="#d0a844" stroke-width="4" stroke-linecap="round"/>
-          <path d="M252,180 C242,173 228,173 217,179" fill="none" stroke="#d0a844" stroke-width="4" stroke-linecap="round"/>
-          <!-- 鼻と口(きゅっと結んだ口元) -->
-          <circle cx="210" cy="226" r="1.6" fill="#e8b58e"/>
-          <path d="M202,241 Q210,239 218,241" fill="none" stroke="#c96b5e" stroke-width="3" stroke-linecap="round"/>
-
-          <!-- 白い鉢巻 -->
-          <path d="M158,150 C182,137 238,137 262,150 L262,164 C238,151 182,151 158,164 Z" fill="#f4f2ec"/>
-          <path d="M156,168 C180,154 240,154 264,168" fill="none" stroke="#d8d4c8" stroke-width="2"/>
-
-          <!-- 前髪(鉢巻の上に流れる) -->
-          <path d="M148,184 C146,118 178,98 210,96 C242,98 274,118 272,184 C262,150 254,148 246,186 C238,146 230,144 222,184 C214,142 204,142 196,184 C188,146 180,148 172,188 C164,152 156,164 148,184 Z" fill="#eec455"/>
-          <path d="M186,120 C196,114 220,113 232,120" fill="none" stroke="#d4a83c" stroke-width="3" stroke-linecap="round"/>
-          <!-- 横の房 -->
-          <path d="M148,166 C140,206 142,246 158,276 C162,244 162,214 168,184 Z" fill="#eec455"/>
-          <path d="M272,166 C280,206 278,246 262,276 C258,244 258,214 252,184 Z" fill="#eec455"/>
-
-          <!-- 黒いリボン(ポニーテールの結び目) -->
-          <path d="M258,116 L296,94 L290,132 Z" fill="#26262c"/>
-          <path d="M258,116 L228,92 L236,124 Z" fill="#26262c"/>
-          <circle cx="258" cy="116" r="8" fill="#1b1b20"/>
-          <path d="M260,122 C270,146 266,168 250,186" fill="none" stroke="#26262c" stroke-width="9" stroke-linecap="round"/>
-          <path d="M256,122 C250,142 252,158 262,174" fill="none" stroke="#33333a" stroke-width="7" stroke-linecap="round"/>
-        </g>
-
-        <!-- 舞う桜の花びら -->
-        <g fill="#f9b8cd">
-          <path class="petal-f" d="M86,140 c5,-8 13,-8 16,0 c-3,8 -11,9 -16,0 Z"/>
-          <path class="petal-s" d="M330,96 c5,-8 13,-8 16,0 c-3,8 -11,9 -16,0 Z" fill="#ee8fb0"/>
-          <path class="petal-f" d="M356,330 c5,-8 13,-8 16,0 c-3,8 -11,9 -16,0 Z"/>
-          <path class="petal-s" d="M66,380 c5,-8 13,-8 16,0 c-3,8 -11,9 -16,0 Z"/>
-          <path class="petal-f" d="M120,520 c5,-8 13,-8 16,0 c-3,8 -11,9 -16,0 Z" fill="#ee8fb0"/>
-          <path class="petal-s" d="M310,540 c5,-8 13,-8 16,0 c-3,8 -11,9 -16,0 Z"/>
-          <path class="petal-f" d="M262,44 c5,-8 13,-8 16,0 c-3,8 -11,9 -16,0 Z"/>
-        </g>
-      </svg>
+      <!-- キャラクター画像: assets/title-character.png を任意の透過PNGに差し替えてください -->
+      <img src="./assets/title-character.png" alt="">
     </div>
     <h1>SHINOBI RUSH</h1>
     <div class="sub">〜 疾風の刃 〜</div>
