@@ -3,18 +3,18 @@
 ブラウザで動く 3D TPS 忍者アクションゲーム。
 敵の弾幕をスライドダッシュ・二段ジャンプ・壁走りでかいくぐり、立ちはだかる敵をスタイリッシュに斬り捨てて、体力が尽きる前に彼方の大鳥居(ゴール)を目指せ。
 
-## 遊び方
+## 遊び方(開発)
 
-ES Modules を使っているため、ローカルの HTTP サーバー経由で開いてください。
+Vite ベースのプロジェクトです。
 
 ```bash
-# リポジトリ直下で
-python3 -m http.server 8000
-# または
-npx serve .
+npm install
+npm run dev      # 開発サーバー(http://localhost:5173)
+npm run build    # 本番ビルド → dist/
+npm run preview  # ビルド結果の確認
 ```
 
-ブラウザで http://localhost:8000 を開くとゲームが始まります。
+Vercel には `vercel.json` の設定でそのままデプロイできます(フレームワーク: Vite、`npm run build` → `dist/`)。
 
 ## 操作方法
 
@@ -78,7 +78,12 @@ npx serve .
 
 ## 技術構成
 
-- [Three.js](https://threejs.org/) r160(`lib/` に同梱、ビルド不要)
-- 効果音は WebAudio API でリアルタイム合成(外部アセットなし)
-- フォントは Google Fonts(Yuji Syuku / Zen Kaku Gothic New / Rajdhani)。オフライン時はシステムフォントにフォールバック
-- 依存パッケージ・ビルド工程なしの静的サイト。Vercel や GitHub Pages にそのままデプロイ可能
+- [Three.js](https://threejs.org/) r180 + [Vite](https://vitejs.dev/)(npm 管理・ビルドあり)
+- **セルルック描画**: MeshToonMaterial(4段グラデーション)+ 背面法の輪郭線
+- **ポストプロセス**: [postprocessing](https://github.com/pmndrs/postprocessing) によるブルーム + ビネット、ACES トーンマッピング
+- **リアルタイムシャドウ**(PCFソフト、プレイヤー追従のシャドウカメラ)
+- **プロシージャルテクスチャ**(石畳・漆喰・地面ノイズを canvas で生成、外部画像アセット不要)
+- **GPUインスタンシング**(竹林・桜/紅葉並木・塀の柱を一括描画)
+- グラデーションの空ドーム(カメラ追従シェーダー)
+- 効果音は WebAudio API でリアルタイム合成
+- モバイルでは影の解像度・MSAA・ピクセル比を自動で軽量化
